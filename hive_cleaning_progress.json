@@ -1,0 +1,7 @@
+{
+  "percentage": 0,
+  "current_step": "错误",
+  "message": "清洗失败: Command 'docker exec hive-server beeline -u jdbc:hive2://localhost:10000 -f /tmp/03_data_cleaning.sql' timed out after 300 seconds",
+  "status": "error",
+  "timestamp": "2026-01-01T20:27:36.202597"
+}

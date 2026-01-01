@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Management - Recommendation System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="demo_dashboard.html">
+                <i class="bi bi-star-fill"></i> Recommendation System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="demo_dashboard.html">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="demo_recommendations.html">
+                            <i class="bi bi-list-stars"></i> Recommendations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="demo_data_management.html">
+                            <i class="bi bi-database"></i> Data Management
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> Demo User
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="demo_login.html">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="text-white">
+                    <i class="bi bi-database"></i> Data Management
+                </h1>
+                <p class="text-white-50">Upload and manage datasets for processing</p>
+            </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-upload"></i> Upload New Dataset</h5>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        <label for="dataFile" class="form-label">Dataset File (CSV)</label>
+                                        <input type="file" class="form-control" id="dataFile" accept=".csv">
+                                        <div class="form-text">Upload a CSV file containing your dataset</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="button" class="btn btn-primary w-100 mb-3" onclick="alert('File uploaded successfully!')">
+                                        <i class="bi bi-cloud-upload"></i> Upload Dataset
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description (Optional)</label>
+                                <textarea class="form-control" id="description" rows="3" placeholder="Dataset description (optional)"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Datasets List -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-table"></i> Uploaded Datasets</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Filename</th>
+                                        <th>Upload Date</th>
+                                        <th>Status</th>
+                                        <th>Processed Date</th>
+                                        <th>Records</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td><code>recommendation_data_v1.csv</code></td>
+                                        <td>2025-11-21 10:30</td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Processed
+                                            </span>
+                                        </td>
+                                        <td>2025-11-21 10:45</td>
+                                        <td>1,234</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="bi bi-check"></i> Already Processed
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td><code>user_preferences_nov.csv</code></td>
+                                        <td>2025-11-20 16:20</td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Processed
+                                            </span>
+                                        </td>
+                                        <td>2025-11-20 16:35</td>
+                                        <td>856</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="bi bi-check"></i> Already Processed
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td><code>latest_items_dataset.csv</code></td>
+                                        <td>2025-11-21 14:15</td>
+                                        <td>
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-hourglass-split"></i> Pending
+                                            </span>
+                                        </td>
+                                        <td><span class="text-muted">-</span></td>
+                                        <td>0</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" onclick="alert('Processing started! This may take a few minutes...')">
+                                                <i class="bi bi-gear"></i> Process with Spark
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td><code>test_dataset.csv</code></td>
+                                        <td>2025-11-19 09:00</td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Processed
+                                            </span>
+                                        </td>
+                                        <td>2025-11-19 09:12</td>
+                                        <td>542</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="bi bi-check"></i> Already Processed
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6><i class="bi bi-info-circle"></i> How it works:</h6>
+                        <ol class="mb-0">
+                            <li>Upload your CSV dataset using the form above</li>
+                            <li>Click "Process with Spark" to clean and transform the data using Apache Spark</li>
+                            <li>Processed data will be automatically written to MySQL database</li>
+                            <li>View recommendations in the Recommendations page</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

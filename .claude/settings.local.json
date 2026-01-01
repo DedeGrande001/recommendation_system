@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker volume rm:*)",
+      "Bash(timeout 5 docker logs:*)",
+      "Bash(findstr:*)",
+      "Bash(timeout 30 docker exec:*)",
+      "Bash(timeout 15 docker exec:*)",
+      "Bash(timeout 20 docker exec:*)",
+      "Bash(docker inspect:*)",
+      "Bash(ls:*)",
+      "Bash(python hive_data_pipeline.py:*)",
+      "Bash(python verify_hive_data.py:*)",
+      "Bash(python:*)",
+      "Bash(timeout 120 docker logs:*)",
+      "Bash(timeout 30 docker logs:*)",
+      "Bash(timeout 15 docker logs:*)",
+      "Bash(timeout 5 python:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

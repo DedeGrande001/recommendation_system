@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommendations - Recommendation System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="demo_dashboard.html">
+                <i class="bi bi-star-fill"></i> Recommendation System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="demo_dashboard.html">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="demo_recommendations.html">
+                            <i class="bi bi-list-stars"></i> Recommendations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="demo_data_management.html">
+                            <i class="bi bi-database"></i> Data Management
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> Demo User
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="demo_login.html">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="text-white">
+                    <i class="bi bi-list-stars"></i> All Recommendations
+                </h1>
+                <p class="text-white-50">Browse all recommendation results</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Item ID</th>
+                                        <th>Item Name</th>
+                                        <th>Category</th>
+                                        <th>Score</th>
+                                        <th>Description</th>
+                                        <th>Created At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>ITEM-001</code></td>
+                                        <td><strong>Machine Learning Course</strong></td>
+                                        <td><span class="badge bg-primary">Education</span></td>
+                                        <td><span class="badge bg-success">4.85</span></td>
+                                        <td>Comprehensive ML course for beginners</td>
+                                        <td>2025-11-21 10:30</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>ITEM-002</code></td>
+                                        <td><strong>Python Programming Book</strong></td>
+                                        <td><span class="badge bg-primary">Books</span></td>
+                                        <td><span class="badge bg-success">4.72</span></td>
+                                        <td>Learn Python from scratch to advanced</td>
+                                        <td>2025-11-21 09:15</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>ITEM-003</code></td>
+                                        <td><strong>Data Science Toolkit</strong></td>
+                                        <td><span class="badge bg-primary">Software</span></td>
+                                        <td><span class="badge bg-success">4.68</span></td>
+                                        <td>Essential tools for data scientists</td>
+                                        <td>2025-11-20 18:45</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>ITEM-004</code></td>
+                                        <td><strong>Advanced Statistics</strong></td>
+                                        <td><span class="badge bg-primary">Education</span></td>
+                                        <td><span class="badge bg-success">4.55</span></td>
+                                        <td>Master statistical analysis techniques</td>
+                                        <td>2025-11-20 16:20</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>ITEM-005</code></td>
+                                        <td><strong>Big Data Analytics</strong></td>
+                                        <td><span class="badge bg-primary">Technology</span></td>
+                                        <td><span class="badge bg-success">4.43</span></td>
+                                        <td>Process and analyze large datasets</td>
+                                        <td>2025-11-20 14:10</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>ITEM-006</code></td>
+                                        <td><strong>Deep Learning Specialization</strong></td>
+                                        <td><span class="badge bg-primary">Education</span></td>
+                                        <td><span class="badge bg-success">4.91</span></td>
+                                        <td>Neural networks and deep learning</td>
+                                        <td>2025-11-19 22:05</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>ITEM-007</code></td>
+                                        <td><strong>SQL Database Design</strong></td>
+                                        <td><span class="badge bg-primary">Technology</span></td>
+                                        <td><span class="badge bg-success">4.38</span></td>
+                                        <td>Design efficient relational databases</td>
+                                        <td>2025-11-19 19:30</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>ITEM-008</code></td>
+                                        <td><strong>Cloud Computing Essentials</strong></td>
+                                        <td><span class="badge bg-primary">Technology</span></td>
+                                        <td><span class="badge bg-success">4.62</span></td>
+                                        <td>AWS, Azure, and GCP fundamentals</td>
+                                        <td>2025-11-19 15:45</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#">Previous</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Management - Recommendation System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="text-white">
+                <i class="bi bi-database"></i> Data Management
+            </h1>
+            <p class="text-white-50">Upload and manage datasets for processing</p>
+        </div>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-upload"></i> Upload New Dataset</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="{{ form.data_file.id_for_label }}" class="form-label">Dataset File (CSV)</label>
+                                    {{ form.data_file }}
+                                    {% if form.data_file.errors %}
+                                        <div class="text-danger small">{{ form.data_file.errors }}</div>
+                                    {% endif %}
+                                    <div class="form-text">Upload a CSV file containing your dataset</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100 mb-3">
+                                    <i class="bi bi-cloud-upload"></i> Upload Dataset
+                                </button>
+                            </div>
+                        </div>
+                        {% if form.description %}
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description (Optional)</label>
+                            {{ form.description }}
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clear Data Button -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Dangerous Operation</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Clear all movie and recommendation data. This operation cannot be undone!</p>
+                    <form method="post" action="{% url 'clear_all_data' %}" onsubmit="return confirm('Are you sure you want to clear all data? This operation cannot be undone!');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash3"></i> Clear All Data
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Progress -->
+    <div class="row mb-4" id="progress-container" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> Spark Processing Progress</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress" style="height: 30px;">
+                        <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+                             role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            0%
+                        </div>
+                    </div>
+                    <p id="progress-message" class="text-center mt-2 mb-0">Preparing to start processing...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Datasets List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-table"></i> Uploaded Datasets</h5>
+                    <button class="btn btn-sm btn-primary" onclick="processAllData()">
+                        <i class="bi bi-lightning"></i> Process MovieLens Data
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if datasets %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Filename</th>
+                                    <th>Upload Date</th>
+                                    <th>Status</th>
+                                    <th>Processed Date</th>
+                                    <th>Records</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dataset in datasets %}
+                                <tr>
+                                    <td>{{ dataset.id }}</td>
+                                    <td><code>{{ dataset.data_file }}</code></td>
+                                    <td>{{ dataset.upload_date|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        {% if dataset.processed %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Processed
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-hourglass-split"></i> Pending
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if dataset.processed_date %}
+                                        {{ dataset.processed_date|date:"Y-m-d H:i" }}
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ dataset.record_count|default:"0" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            {% if not dataset.processed %}
+                                            <a href="{% url 'process_dataset' dataset.id %}"
+                                               class="btn btn-sm btn-primary">
+                                                <i class="bi bi-gear"></i> Process with Spark
+                                            </a>
+                                            {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="bi bi-check"></i> Already Processed
+                                            </button>
+                                            {% endif %}
+                                            <form method="post" action="{% url 'delete_dataset' dataset.id %}"
+                                                  style="display: inline;"
+                                                  onsubmit="return confirm('Are you sure you want to delete dataset {{ dataset.data_file }}?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-folder-x text-muted" style="font-size: 4rem;"></i>
+                        <p class="text-muted mt-3">No datasets uploaded yet. Upload your first dataset above!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6><i class="bi bi-info-circle"></i> How it works:</h6>
+                    <ol class="mb-0">
+                        <li>Upload your CSV dataset using the form above</li>
+                        <li>Click "Process with Spark" to clean and transform the data using Apache Spark</li>
+                        <li>Processed data will be automatically written to MySQL database</li>
+                        <li>View recommendations in the Recommendations page</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Process MovieLens data
+function processAllData() {
+    if (!confirm('Are you sure you want to start processing MovieLens data? This will take 2-5 minutes.')) {
+        return;
+    }
+
+    // Show progress bar
+    document.getElementById('progress-container').style.display = 'block';
+    updateProgress(10, 'Initializing Spark...');
+
+    // Simulate progress updates
+    let progress = 10;
+    const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 90) {
+            progress = 90;
+        }
+
+        let message = '';
+        if (progress < 20) {
+            message = 'Initializing Spark environment...';
+        } else if (progress < 40) {
+            message = 'Reading MovieLens dataset...';
+        } else if (progress < 60) {
+            message = 'Calculating movie statistics...';
+        } else if (progress < 80) {
+            message = 'Generating recommendations...';
+        } else {
+            message = 'Saving to database...';
+        }
+
+        updateProgress(Math.floor(progress), message);
+    }, 1000);
+
+    // Call Spark processing
+    fetch('/process-movielens/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        clearInterval(interval);
+        if (data.success) {
+            updateProgress(100, 'Processing completed!');
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            updateProgress(0, 'Processing failed: ' + data.message);
+            document.getElementById('progress-bar').classList.remove('bg-info');
+            document.getElementById('progress-bar').classList.add('bg-danger');
+        }
+    })
+    .catch(error => {
+        clearInterval(interval);
+        updateProgress(0, 'Error: ' + error.message);
+        document.getElementById('progress-bar').classList.remove('bg-info');
+        document.getElementById('progress-bar').classList.add('bg-danger');
+    });
+}
+
+function updateProgress(percent, message) {
+    const progressBar = document.getElementById('progress-bar');
+    const progressMessage = document.getElementById('progress-message');
+
+    progressBar.style.width = percent + '%';
+    progressBar.setAttribute('aria-valuenow', percent);
+    progressBar.textContent = Math.floor(percent) + '%';
+    progressMessage.textContent = message;
+}
+
+function getCsrfToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+</script>
+{% endblock %}

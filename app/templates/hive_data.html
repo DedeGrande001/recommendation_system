@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+
+{% block title %}Hive 数据查看 - MovieLens Recommendation{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0">
+                            <i class="bi bi-database"></i> Hive 数据仓库
+                        </h4>
+                        <small>查看 Hive 中清洗后的 MovieLens 数据</small>
+                    </div>
+                    <div>
+                        <button id="runCleaningBtn" class="btn btn-light btn-sm">
+                            <i class="bi bi-play-circle"></i> 运行数据清洗
+                        </button>
+                        <button id="refreshBtn" class="btn btn-light btn-sm" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise"></i> 刷新
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- 加载指示器 -->
+                    <div id="loadingIndicator" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <p class="mt-3 text-muted">正在连接 Hive 数据仓库...</p>
+                    </div>
+
+                    <!-- 消息提示区域 -->
+                    <div id="messageArea"></div>
+
+                    <!-- 进度条区域 -->
+                    <div id="progressArea" style="display: none;">
+                        <div class="card mb-4 border-info">
+                            <div class="card-body">
+                                <h6 class="mb-3">
+                                    <i class="bi bi-hourglass-split"></i>
+                                    <span id="progressStep">正在清洗数据...</span>
+                                </h6>
+                                <div class="progress mb-2" style="height: 25px;">
+                                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+                                         role="progressbar" style="width: 0%">
+                                        <span id="progressPercentage">0%</span>
+                                    </div>
+                                </div>
+                                <p class="text-muted mb-0">
+                                    <i class="bi bi-info-circle"></i>
+                                    <span id="progressMessage">初始化中...</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="mainContent" style="display: none;">
+                    {% if error_msg %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> {{ error_msg }}
+                        </div>
+                        <p class="text-muted">请确保 Hive 容器正在运行：</p>
+                        <code>docker-compose up -d</code>
+                    {% else %}
+                        <!-- 连接状态 -->
+                        <div class="alert alert-success mb-4">
+                            <i class="bi bi-check-circle"></i> Hive 连接正常
+                        </div>
+
+                        {% if hive_stats and hive_stats.available %}
+                            <!-- 数据统计卡片 -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <div class="card border-primary">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-film fs-1 text-primary"></i>
+                                            <h3 class="mt-2">{{ hive_stats.movies_count|default:0|floatformat:0 }}</h3>
+                                            <p class="text-muted mb-0">清洗后的电影</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-success">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-star-fill fs-1 text-warning"></i>
+                                            <h3 class="mt-2">{{ hive_stats.ratings_count|default:0|floatformat:0 }}</h3>
+                                            <p class="text-muted mb-0">用户评分</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-info">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-people-fill fs-1 text-info"></i>
+                                            <h3 class="mt-2">{{ hive_stats.users_count|default:0|floatformat:0 }}</h3>
+                                            <p class="text-muted mb-0">独立用户</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-warning">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-graph-up fs-1 text-success"></i>
+                                            <h3 class="mt-2">{{ hive_stats.avg_rating|default:0|floatformat:2 }}</h3>
+                                            <p class="text-muted mb-0">平均评分</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Top 评分电影 -->
+                            <h5 class="mb-3"><i class="bi bi-trophy"></i> 评分最高的电影（至少 100 个评分）</h5>
+                            {% if top_movies %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>电影 ID</th>
+                                                <th>标题</th>
+                                                <th>年份</th>
+                                                <th>类型</th>
+                                                <th>评分数</th>
+                                                <th>平均评分</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for movie in top_movies %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ movie.movie_id }}</td>
+                                                <td>{{ movie.title }}</td>
+                                                <td>{{ movie.year }}</td>
+                                                <td>
+                                                    <span class="badge bg-secondary">{{ movie.genres }}</span>
+                                                </td>
+                                                <td>{{ movie.rating_count }}</td>
+                                                <td>
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="bi bi-star-fill"></i> {{ movie.avg_rating }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">暂无数据</p>
+                            {% endif %}
+
+                            <!-- 说明信息 -->
+                            <div class="alert alert-info mt-4">
+                                <h6><i class="bi bi-info-circle"></i> 数据来源说明</h6>
+                                <ul class="mb-0">
+                                    <li>数据存储在 <strong>Hive 数据仓库</strong></li>
+                                    <li>表名: <code>movielens_db.cleaned_movies</code> 和 <code>movielens_db.cleaned_ratings</code></li>
+                                    <li>存储格式: Parquet (电影) / ORC (评分)</li>
+                                    <li>数据质量: 所有记录包含 <code>is_valid</code> 标志</li>
+                                    <li>分区策略: 评分按年份和月份动态分区</li>
+                                </ul>
+                            </div>
+
+                        {% endif %}
+                    {% endif %}
+                    </div> <!-- End mainContent -->
+                </div>
+            </div>
+
+            <!-- 返回按钮 -->
+            <div class="text-center">
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> 返回主页
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const runCleaningBtn = document.getElementById('runCleaningBtn');
+    const messageArea = document.getElementById('messageArea');
+    const progressArea = document.getElementById('progressArea');
+    const progressBar = document.getElementById('progressBar');
+    const progressPercentage = document.getElementById('progressPercentage');
+    const progressStep = document.getElementById('progressStep');
+    const progressMessage = document.getElementById('progressMessage');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const mainContent = document.getElementById('mainContent');
+
+    let progressInterval = null;
+
+    // 页面加载完成后,隐藏加载指示器,显示内容
+    window.addEventListener('load', function() {
+        loadingIndicator.style.display = 'none';
+        mainContent.style.display = 'block';
+    });
+
+    // 获取 CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    // 更新进度条
+    function updateProgress() {
+        fetch('{% url "hive_cleaning_progress" %}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'running') {
+                    // 显示进度条
+                    progressArea.style.display = 'block';
+                    messageArea.innerHTML = '';
+
+                    // 更新进度条
+                    progressBar.style.width = data.percentage + '%';
+                    progressPercentage.textContent = data.percentage + '%';
+                    progressStep.textContent = data.current_step;
+                    progressMessage.textContent = data.message;
+
+                } else if (data.status === 'completed') {
+                    // 清洗完成
+                    clearInterval(progressInterval);
+                    progressInterval = null;
+
+                    messageArea.innerHTML = `
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle"></i> ${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+
+                    progressArea.style.display = 'none';
+
+                    // 恢复按钮
+                    runCleaningBtn.disabled = false;
+                    runCleaningBtn.innerHTML = '<i class="bi bi-play-circle"></i> 运行数据清洗';
+
+                    // 3 秒后自动刷新页面
+                    setTimeout(() => {
+                        location.reload();
+                    }, 3000);
+
+                } else if (data.status === 'error') {
+                    // 清洗失败
+                    clearInterval(progressInterval);
+                    progressInterval = null;
+
+                    messageArea.innerHTML = `
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> ${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+
+                    progressArea.style.display = 'none';
+
+                    // 恢复按钮
+                    runCleaningBtn.disabled = false;
+                    runCleaningBtn.innerHTML = '<i class="bi bi-play-circle"></i> 运行数据清洗';
+                }
+            })
+            .catch(error => {
+                console.error('获取进度失败:', error);
+            });
+    }
+
+    // 运行数据清洗
+    runCleaningBtn.addEventListener('click', function() {
+        // 确认对话框
+        if (!confirm('确定要运行 Hive 数据清洗吗？这个过程可能需要 5-10 分钟。')) {
+            return;
+        }
+
+        // 禁用按钮
+        runCleaningBtn.disabled = true;
+        runCleaningBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 正在启动...';
+
+        // 发送请求
+        fetch('{% url "run_hive_cleaning" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 隐藏消息,显示进度条
+                messageArea.innerHTML = '';
+                progressArea.style.display = 'block';
+
+                // 开始轮询进度 (每2秒查询一次)
+                progressInterval = setInterval(updateProgress, 2000);
+
+                // 立即查询一次
+                updateProgress();
+
+            } else {
+                // 失败提示
+                messageArea.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+
+                // 恢复按钮
+                runCleaningBtn.disabled = false;
+                runCleaningBtn.innerHTML = '<i class="bi bi-play-circle"></i> 运行数据清洗';
+            }
+        })
+        .catch(error => {
+            // 错误提示
+            messageArea.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> 请求失败: ${error}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+
+            // 恢复按钮
+            runCleaningBtn.disabled = false;
+            runCleaningBtn.innerHTML = '<i class="bi bi-play-circle"></i> 运行数据清洗';
+        });
+    });
+
+    // 页面加载时检查是否有正在进行的清洗任务
+    updateProgress();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,81 @@
+version: "3"
+
+services:
+  # Hadoop NameNode - HDFS主节点
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    restart: always
+    ports:
+      - 9870:9870  # NameNode Web UI
+      - 9000:9000  # HDFS API端口
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop.env
+
+  # Hadoop DataNode - HDFS数据节点
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
+    restart: always
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    env_file:
+      - ./hadoop.env
+
+  # Hive Metastore 数据库 (PostgreSQL)
+  hive-metastore-postgresql:
+    image: bde2020/hive-metastore-postgresql:2.3.0
+    container_name: hive-metastore-postgresql
+    restart: always
+    volumes:
+      - hive_postgresql_data:/var/lib/postgresql/data
+
+  # Hive Metastore 服务
+  hive-metastore:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: hive-metastore
+    restart: always
+    env_file:
+      - ./hadoop.env
+    command: /opt/hive/bin/hive --service metastore
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore-postgresql/metastore"
+      HIVE_SITE_CONF_datanucleus_schema_autoCreateAll: "true"
+      HIVE_SITE_CONF_hive_metastore_schema_verification: "false"
+      SERVICE_PRECONDITION: "namenode:9870 datanode:9864 hive-metastore-postgresql:5432"
+    ports:
+      - "9083:9083"
+
+  # Hive Server - 提供JDBC/ODBC接口
+  hive-server:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: hive-server
+    restart: always
+    env_file:
+      - ./hadoop.env
+    command: /opt/hive/bin/hive --service hiveserver2
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore-postgresql/metastore"
+      HIVE_CORE_CONF_hive_metastore_schema_verification: "false"
+      HIVE_SITE_CONF_hive_metastore_uris: "thrift://hive-metastore:9083"
+      HIVE_SITE_CONF_hive_server2_enable_doAs: "false"
+      HIVE_SITE_CONF_hive_execution_engine: "mr"
+      HIVE_SITE_CONF_hive_exec_mode_local_auto: "true"
+      HIVE_SITE_CONF_mapreduce_framework_name: "local"
+      CORE_CONF_hadoop_proxyuser_root_hosts: "*"
+      CORE_CONF_hadoop_proxyuser_root_groups: "*"
+      SERVICE_PRECONDITION: "hive-metastore:9083"
+    ports:
+      - "10000:10000"  # HiveServer2 JDBC端口
+      - "10002:10002"  # HiveServer2 Web UI
+
+volumes:
+  hadoop_namenode:
+  hadoop_datanode:
+  hive_postgresql_data:
